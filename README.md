@@ -57,3 +57,20 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 ## License
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+## Product CRUD (with multiple image upload sample)
+
+This project now includes a simple Product CRUD at `/products`.
+
+### Multiple image upload sample
+1. Open create form: `/products/create`.
+2. Fill name, description, and price.
+3. In **Upload Images (multiple)** input, select multiple files at once (Ctrl/Cmd click).
+4. Submit. Uploaded files are saved under `storage/app/public/products` and shown on the product detail page.
+
+### Setup note
+Run this once to make files publicly accessible in the browser:
+
+```bash
+php artisan storage:link
+```
