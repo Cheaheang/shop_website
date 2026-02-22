@@ -87,3 +87,23 @@ Open: `http://127.0.0.1:8000/products`
 2. Select 2-3 files in one upload.
 3. Submit.
 4. Files are stored in `storage/app/public/products` and displayed in Vue product cards.
+
+### Copy Paste to Setup Project 
+```bash
+    composer install
+    cp .env.example .env
+    php artisan key:generate
+    php artisan storage:link
+    php artisan migrate
+    npm install
+    npm run dev
+
+    <!-- Note: when push code gitignore will ignore this -->
+    mkdir storage\framework\cache -Force
+    mkdir storage\framework\cache\data -Force
+    mkdir storage\framework\sessions -Force
+    mkdir storage\framework\views -Force
+    mkdir bootstrap\cache -Force
+
+    php artisan serve
+```
