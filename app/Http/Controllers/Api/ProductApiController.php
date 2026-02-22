@@ -1,28 +1,23 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Api;
 
+use App\Http\Controllers\Controller;
 use App\Models\Product;
-use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\View\View;
 
-class ProductController extends Controller
+class ProductApiController extends Controller
 {
-    public function index(): View
+    public function index(): JsonResponse
     {
-        $products = Product::with('images')->latest()->paginate(10);
+        $products = Product::with('images')->latest()->get();
 
-        return view('products.index', compact('products'));
+        return response()->json($products->map(fn (Product $product) => $this->transformProduct($product)));
     }
 
-    public function create(): View
-    {
-        return view('products.create');
-    }
-
-    public function store(Request $request): RedirectResponse
+    public function store(Request $request): JsonResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -32,7 +27,11 @@ class ProductController extends Controller
             'images.*' => ['image', 'max:2048'],
         ]);
 
-        $product = Product::create($validated);
+        $product = Product::create([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'price' => $validated['price'],
+        ]);
 
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $image) {
@@ -45,24 +44,19 @@ class ProductController extends Controller
             }
         }
 
-        return redirect()->route('products.index')->with('success', 'Product created.');
+        $product->load('images');
+
+        return response()->json($this->transformProduct($product), 201);
     }
 
-    public function show(Product $product): View
+    public function show(Product $product): JsonResponse
     {
         $product->load('images');
 
-        return view('products.show', compact('product'));
+        return response()->json($this->transformProduct($product));
     }
 
-    public function edit(Product $product): View
-    {
-        $product->load('images');
-
-        return view('products.edit', compact('product'));
-    }
-
-    public function update(Request $request, Product $product): RedirectResponse
+    public function update(Request $request, Product $product): JsonResponse
     {
         $validated = $request->validate([
             'name' => ['required', 'string', 'max:255'],
@@ -74,7 +68,11 @@ class ProductController extends Controller
             'remove_image_ids.*' => ['integer', 'exists:product_images,id'],
         ]);
 
-        $product->update($validated);
+        $product->update([
+            'name' => $validated['name'],
+            'description' => $validated['description'] ?? null,
+            'price' => $validated['price'],
+        ]);
 
         if (! empty($validated['remove_image_ids'])) {
             $imagesToRemove = $product->images()->whereIn('id', $validated['remove_image_ids'])->get();
@@ -96,10 +94,12 @@ class ProductController extends Controller
             }
         }
 
-        return redirect()->route('products.show', $product)->with('success', 'Product updated.');
+        $product->load('images');
+
+        return response()->json($this->transformProduct($product));
     }
 
-    public function destroy(Product $product): RedirectResponse
+    public function destroy(Product $product): JsonResponse
     {
         $product->load('images');
 
@@ -109,6 +109,23 @@ class ProductController extends Controller
 
         $product->delete();
 
-        return redirect()->route('products.index')->with('success', 'Product deleted.');
+        return response()->json(['message' => 'Product deleted']);
+    }
+
+    private function transformProduct(Product $product): array
+    {
+        return [
+            'id' => $product->id,
+            'name' => $product->name,
+            'description' => $product->description,
+            'price' => $product->price,
+            'images' => $product->images->map(fn ($image) => [
+                'id' => $image->id,
+                'original_name' => $image->original_name,
+                'path' => $image->path,
+                'url' => Storage::url($image->path),
+            ])->values(),
+            'created_at' => $product->created_at,
+        ];
     }
 }

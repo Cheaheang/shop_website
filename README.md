@@ -58,19 +58,32 @@ If you discover a security vulnerability within Laravel, please send an e-mail t
 
 The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
 
-## Product CRUD (with multiple image upload sample)
+## Product CRUD (Vue frontend + MySQL)
 
-This project now includes a simple Product CRUD at `/products`.
+This project provides Product CRUD using Vue on the frontend and Laravel API on the backend.
+
+### Stack
+- Frontend: Vue 3 (`resources/js/components/ProductCrud.vue`)
+- Backend API: Laravel `Route::apiResource('products', ...)`
+- Database: MySQL (`.env` uses `DB_CONNECTION=mysql`)
+- Image storage: `storage/app/public/products`
+
+### Run
+```bash
+composer install
+npm install
+cp .env.example .env
+php artisan key:generate
+php artisan storage:link
+php artisan migrate
+npm run dev
+php artisan serve
+```
+
+Open: `http://127.0.0.1:8000/products`
 
 ### Multiple image upload sample
-1. Open create form: `/products/create`.
-2. Fill name, description, and price.
-3. In **Upload Images (multiple)** input, select multiple files at once (Ctrl/Cmd click).
-4. Submit. Uploaded files are saved under `storage/app/public/products` and shown on the product detail page.
-
-### Setup note
-Run this once to make files publicly accessible in the browser:
-
-```bash
-php artisan storage:link
-```
+1. Create product form has **multiple** image input (`images[]`).
+2. Select 2-3 files in one upload.
+3. Submit.
+4. Files are stored in `storage/app/public/products` and displayed in Vue product cards.
