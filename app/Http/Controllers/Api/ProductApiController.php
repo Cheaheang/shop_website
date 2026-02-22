@@ -24,7 +24,7 @@ class ProductApiController extends Controller
             'description' => ['nullable', 'string'],
             'price' => ['required', 'numeric', 'min:0'],
             'images' => ['nullable', 'array'],
-            'images.*' => ['image', 'max:2048'],
+            'images.*' => ['image'],
         ]);
 
         $product = Product::create([
